@@ -1,0 +1,28 @@
+---
+title: "STAT 6950 Group Project Jack's stuff"
+author: "Jack Preisser"
+date: "2026-11-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# We are doing
+```{r}
+library(tidyverse)
+library(readxl)
+library(here)
+library(readr)
+```
+
+
+```{r}
+# first step of the process
+# raw data file
+raw_data <- read_xlsx(here("SamJackZach.R.project","pone.0302604.s004.xlsx"), skip = 1)
+view(raw_data)
+
+```
+
