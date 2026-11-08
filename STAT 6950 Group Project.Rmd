@@ -15,14 +15,53 @@ library(tidyverse)
 library(readxl)
 library(here)
 library(readr)
+library(patchwork)
 ```
 
 
 ```{r}
 # first step of the process
 # raw data file
-raw_data <- read_xlsx(here("SamJackZach.R.project","pone.0302604.s004.xlsx"), skip = 1)
+raw_data <- read_xlsx(here("pone.0302604.s004.xlsx"), skip = 1)
 view(raw_data)
+
+sig_variables <- raw_data %>% select(burnout,apathetic, self_compassion, compassion_fatigue, mental_wellbeing,depression,receptive,connectedness)
+
+model.from.paper <- lm(burnout ~., data = sig_variables)
+summary(model.from.paper)
 
 ```
 
+
+Looking at the original paper
+
+* The **burnout variable** is considered to be the target/predictor variable
+* their first multiple linear regression model is fit using the variables that have p-values under 0.05 for t-tests regarding whether thevaliue of the coefficient is non-zero or not
+  - these people do not seem to be treating the 0.05 significance level like a 'night' and 'day' thing
+  
+* they use the variables *apathetic*, *self compassion*, *compassion fatigue*, *mental wellbeing*, *depression*, *receptive*, and *connectedness*
+* the $R^2$ in their model is 0.70, and they say that 70% of the variation in burnout scores is explained by the regressors, but again, this does not tell us anything about the appropriateness of the model fit.
+
+
+```{r}
+# manually creating their "S1 Table" for the number of online diary entries for each month
+Months <- c("January 2021", "February 2021", "March 2021", "April 2021", "May 2021", "June 2021", "July 2021", " August 2021", "September 2021", "October 2021", "November 2021", "December 2021", "January 2022", "February 2022", "March 2022", "April 2022", "May 2022")
+
+Number.of.entries <- c(23,9,24,12,22,17,13,16,12,15,7,8,6,6,5,15,9)
+
+S1.Table <- data.frame(Months, Number.of.entries)
+```
+
+
+```{r}
+# recreating the 'S1 Fig. Distribution'
+# sig_variables$self_compassion <- sig_variables$self_compassion + 10.01
+
+
+p1 <- sig_variables_no_10 <- sig_variables %>% filter(self_compassion != 10)
+ggplot(data = sig_variables_no_10, aes(x= self_compassion)) + geom_histogram(bins = 10, color = "red") + labs(x = "Self-Compassion Scores", y = "Counts", title = "S1 Fig. Distribution")
+p2 <- sig_variables_no_10 <- sig_variables %>% filter(self_compassion != 10)
+ggplot(data = sig_variables_no_10, aes(x= self_compassion)) + geom_histogram(bins = 10, color = "red") + labs(x = "Self-Compassion Scores", y = "Counts", title = "S1 Fig. Distribution without score 10")
+
+p1+p2
+```
