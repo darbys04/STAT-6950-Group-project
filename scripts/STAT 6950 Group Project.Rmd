@@ -1,0 +1,276 @@
+---
+title: "STAT 6950 Group Project"
+author: "Jack, Sam, and Zach"
+date: "2026-11-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Jack
+
+```{r, include=FALSE}
+library(tidyverse)
+library(readxl)
+#library(here) # SD: No longer necessary -- switched data to referential file structure
+library(readr)
+library(patchwork)
+library(car)
+```
+
+```{r load-data}
+# first step of the process
+# raw data file
+raw_data <- read_xlsx("../data/pone.0302604.s004.xlsx", skip = 1) |>
+  select(-c(userID))
+view(raw_data)
+```
+
+## Variable Selection by VIF
+
+```{r vif-r2-overfitted-model}
+# an R-squared of 0.7347 for 36 predictors 
+overfitted_model <- lm(burnout ~., data = raw_data)
+summary(overfitted_model)$r.squared
+
+variance_inflation_factors <- tibble(
+  variables = character(36),
+  values = numeric(36)
+)
+
+for (i in 1:36) {
+  variance_inflation_factors$values[i] <- vif(overfitted_model)[[i]]
+  variance_inflation_factors$variables[i] <- names(vif(overfitted_model))[[i]]
+}
+
+variance_inflation_factors <- variance_inflation_factors %>%
+  mutate(VIF_range = ifelse(values > 4, "4-5", ifelse(values < 4 & values > 3, "3-4", ifelse(values < 3 & values > 2, "2-3", ifelse(values < 2 & values > 1, "1-2", "less than 1")))))
+
+variance_inflation_factors %>%
+  arrange(desc(values))
+
+ggplot(variance_inflation_factors, aes(x = VIF_range, color = VIF_range)) + geom_bar() + scale_y_continuous(breaks = c(4,5,12,15)) + labs(title = str_wrap("Binned Variance Inflation Factors for predicting burnout with all variables in the 'raw data'", width = 45), x = "VIF range", legend = "VIF range")
+```
+
+```{r reduced-vif-model}
+# fitting a model with the variance inflation factors restricted from 1-3
+variance_inflation_factors_reduced <- variance_inflation_factors %>%
+  filter(VIF_range %in% c("1-2", "2-3"))
+raw_data_reduced <- raw_data %>% select(variance_inflation_factors_reduced$variables, burnout)
+
+lm.reduced <- lm(burnout ~., data = raw_data_reduced)
+
+summary(lm.reduced)$r.squared
+
+# this model has 20 predictors, and the variables with the higher-end of
+# the variance inflation factors have been removed
+
+vif(lm.reduced)
+```
+
+```{r}
+summary(lm.reduced)
+```
+
+## Variable Selection by Significance
+
+If we take the predictors that are considered to be significant under the standard 0.05 threshold with the model that only contains the variables with variance inflation factors less than 3 from the original 36 predictor model, then we would fit a model on 'physical', 'meaning purpose', 'apathetic', and motivated'
+
+```{r reduced-model}
+# to be clear, this model takes the significant predictors (p>0.05) for the model
+# of reduced variance inflation (cutting the 3+ threshold) from the 36 
+# predictor model
+lm.reduced.sig <- lm(burnout ~ physical + meaning_purpose + apathetic, data = raw_data_reduced)
+summary(lm.reduced.sig)$r.squared
+```
+
+```{r}
+
+# these variables are those that were listed to be 'statistically significant' from the model that they fit, where their p-values for the t-test for each variable
+# was less than .05
+
+fitted_variables <- raw_data %>% select(burnout,apathetic, self_compassion, compassion_fatigue, mental_wellbeing,depression,receptive,connectedness, worry, dissociation, perception)
+
+# fitting a regression model from which the R^2 values were obtained
+
+fitted.lm <- lm(burnout ~., data = fitted_variables)
+
+summary(fitted.lm)$r.squared
+
+sig_variables <- raw_data %>% select(burnout,apathetic, self_compassion, compassion_fatigue, mental_wellbeing,depression,receptive,connectedness)
+```
+
+Looking at the original paper
+
+- The **burnout variable** is considered to be the response variable
+
+- their first multiple linear regression model is fit using the variables that have p-values under 0.05 for t-tests regarding whether the value of the coefficient is non-zero or not
+
+  - these people do not seem to be treating the 0.05 significance level like a 'night' and 'day' thing
+
+- they use the variables *apathetic*, *self compassion*, *compassion fatigue*, *mental wellbeing*, *depression*, *receptive*, and *connectedness*
+
+- the $R^2$ in their model is 0.70, and they say that 70% of the variation in burnout scores is explained by the regressors, but again, this does not tell us anything about the appropriateness of the model fit.
+
+  - a good question to address is whether they are still overfitting their regression model after removing the non-significant predictors--worry, dissociation, and perception--
+
+The predictor variables are:
+
+- burnout
+- apathetic
+- compassion_fatigue
+- mental_wellbeing
+- depression
+- receptive
+- connectedness
+
+Removed variables that are not considered to be 'statistically significant'
+
+- this includes 'worry,' 'dissociation,', and 'perception'
+- the authors of the article mentioned that the predictors explain about 70% of the variation in burnout (when including the 'non-statistically significant' predictors)
+
+## Figure Recreation
+
+```{r}
+# manually creating their "S1 Table" for the number of online diary entries for each month
+Months <- c("January 2021", "February 2021", "March 2021", "April 2021", "May 2021", "June 2021", "July 2021", " August 2021", "September 2021", "October 2021", "November 2021", "December 2021", "January 2022", "February 2022", "March 2022", "April 2022", "May 2022")
+
+Number.of.entries <- c(23,9,24,12,22,17,13,16,12,15,7,8,6,6,5,15,9)
+
+S1.Table <- data.frame(Months, Number.of.entries)
+
+S1.Table
+```
+
+```{r}
+# recreating the 'S1 Fig. Distribution'
+# sig_variables$self_compassion <- sig_variables$self_compassion + 10.01
+
+
+p1 <- sig_variables_no_10 <- sig_variables %>% filter(self_compassion != 10)
+ggplot(data = sig_variables_no_10, aes(x= self_compassion)) + geom_histogram(bins = 10, color = "red") + labs(x = "Self-Compassion Scores", y = "Counts", title = "S1 Fig. Distribution")
+p2 <- sig_variables_no_10 <- sig_variables %>% filter(self_compassion != 10)
+ggplot(data = sig_variables_no_10, aes(x= self_compassion)) + geom_histogram(bins = 10, color = "red") + labs(x = "Self-Compassion Scores", y = "Counts", title = "S1 Fig. Distribution without score 10")
+
+p1+p2
+```
+
+### Note from SD: does this section of text mean something different from the text before the previous code block?
+
+The remaining predictor variables are:
+
+- self-compassion
+
+- apathetic
+
+- compassion_fatigue
+
+- mental_wellbeing
+
+- depression
+
+- receptive
+
+- connectedness
+
+- removed variables that are not considered to be 'statistically significant'
+
+  - this includes 'worry,' 'dissociation,', and 'perception'
+  - the authors of the article mentioned that the predictors explain about 70% of the variation in burnout (when including the 'non-statistically significant' predictors)
+
+```{r}
+# creating a regression model for self_compassion on the predictor variables--
+
+burnout_reduced.one.lm <- lm(burnout ~., data = sig_variables)
+
+summary(burnout_reduced.one.lm)
+```
+
+# Sam
+
+## Analysis of Covariance
+
+```{r ancova-eda}
+# Package used according to the authors
+library(jmv)
+
+# Plot self compassion and compassion fatigue as variables of interest
+sig_variables |>
+  select(self_compassion, compassion_fatigue) |>
+  pivot_longer(cols = everything(), 
+               names_to = "Variable", 
+               values_to = "Values") |>
+  ggplot() +
+  geom_histogram(aes(x = Values), binwidth = 2, color = "blue") +
+  labs(
+    y = "Frequency"
+  ) +
+  theme_classic() +
+  facet_wrap(~Variable, scales = "free_y")
+```
+
+Neither of these histograms match the one reported in the paper (S1 Fig), but the compassion_fatigue plot comes much closer, suggesting the authors may have mixed up the names of the variables in their reporting. Unfortunately, since they use this plot to justify binning one variable over another, it's unclear if their code matches what they described or what they said they did. We replicate with both options
+
+### Bin self_compassion (as reported)
+
+Note, it is not clear from the paper why the variables that are included in the ANCOVA model are selected. I have based my selection here on the paper's reported results.
+
+```{r}
+# Bin self compassion and select reported variables
+ancova_data <- raw_data |>
+  select(worry, apathetic, self_compassion, curious,
+         fear_of_harm_from_others, avoidance, compassion_fatigue,
+         dissociation, perception, mental_wellbeing, depression,
+         receptive, connectedness, burnout) |>
+  mutate(
+    self_compassion_binned = case_when(
+      self_compassion <= -4 ~ "low",
+      self_compassion >= 4 ~ "high",
+      TRUE ~ "medium"
+    ),
+    self_compassion_binned = as.factor(self_compassion_binned)
+  ) |>
+  select(-c(self_compassion))
+
+# Fit ANCOVA Model
+ancova_model <- jmv::ancova(
+  formula = burnout ~ .,
+  data = ancova_data)
+
+# Look at results
+ancova_model$main
+```
+
+### Bin compassion_fatigue (based on dist. description)
+
+```{r}
+# Bin self compassion and select reported variables
+ancova_data <- raw_data |>
+  select(worry, apathetic, self_compassion, curious,
+         fear_of_harm_from_others, avoidance, compassion_fatigue,
+         dissociation, perception, mental_wellbeing, depression,
+         receptive, connectedness, burnout) |>
+  mutate(
+    compassion_fatigue_binned = case_when(
+      compassion_fatigue <= -4 ~ "low",
+      compassion_fatigue >= 4 ~ "high",
+      TRUE ~ "medium"
+    ),
+    compassion_fatigue_binned = as.factor(compassion_fatigue_binned)
+  ) |>
+  select(-c(compassion_fatigue))
+
+# Fit ANCOVA Model
+ancova_model <- jmv::ancova(
+  formula = burnout ~ .,
+  data = ancova_data)
+
+# Look at results
+ancova_model$main
+```
+
+## ANCOVA Conclusion
+
+Findings could not be even remotely replicated. The paper indicates that "all the variables except worry and perception have a p-value below 0.05," but based on our model, only `worry`, `apathetic`, and `avoidance` are the significant variables. Also, when discussing ANCOVA, the paper indicates that only one dependent variable should be binned, but notably `depression`, `receptive`, and `connectedness` are all binary (and thus categorical) variables.
