@@ -63,8 +63,24 @@ summary(lm.reduced)$r.squared
 
 # this model has 20 predictors, and the variables with the higher-end of
 # the variance inflation factors have been removed
+
 vif(lm.reduced)
 ```
+
+```{r}
+summary(lm.reduced)
+```
+
+If we take the predictors that are considered to be significant under the standard 0.05 threshold with the model that only contains the variables with variance inflation factors less than 3 from the original 36 predictor model, then we would fit a model on 'physical', 'meaning purpose', 'apathetic', and motivated'
+
+```{r}
+# to be clear, this model takes the significant predictors (p>0.05) for the model
+# of reduced variance inflation (cutting the 3+ threshold) from the 36 
+# predictor model
+lm.reduced.sig <- lm(burnout ~ physical + meaning_purpose + apathetic, data = raw_data_reduced)
+summary(lm.reduced.sig)$r.squared
+```
+
 
 ```{r}
 
@@ -130,13 +146,6 @@ ggplot(data = sig_variables_no_10, aes(x= self_compassion)) + geom_histogram(bin
 p1+p2
 ```
 
-
-```{r}
-# Variance inflation with the 36 predictor model
-variance_inflation_factors %>%
-  group_by(VIF_range) %>%
-  summarize(no. = n())
-```
 
 The remaining predictor variables are:
 
