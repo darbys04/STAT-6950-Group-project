@@ -274,3 +274,56 @@ ancova_model$main
 ## ANCOVA Conclusion
 
 Findings could not be even remotely replicated. The paper indicates that "all the variables except worry and perception have a p-value below 0.05," but based on our model, only `worry`, `apathetic`, and `avoidance` are the significant variables. Also, when discussing ANCOVA, the paper indicates that only one dependent variable should be binned, but notably `depression`, `receptive`, and `connectedness` are all binary (and thus categorical) variables.
+
+# Zack?
+
+## Correlation Matrix
+
+```{r}
+# creating the correlation matrix for the fitted model with the variables deemed
+# significant under the 36-variable model
+
+Y <- sig_variables$burnout
+X.mat <- cbind(rep(1, nrow(sig_variables)), sig_variables$apathetic, sig_variables$self_compassion, sig_variables$compassion_fatigue, sig_variables$mental_wellbeing, sig_variables$depression, sig_variables$receptive, sig_variables$connectedness)
+
+t(X.mat) %*% X.mat
+
+
+beta.hat <- solve(t(X.mat) %*% X.mat) %*% t(X.mat) %*% Y; #beta.hat
+df <- nrow(X.mat) - ncol(X.mat)
+RSS <- t(Y-X.mat %*% beta.hat) %*% (Y-X.mat %*% beta.hat)
+sigma.hat <- as.numeric(sqrt(RSS/df))
+
+covariance_matrix <- sigma.hat^2*solve(t(X.mat) %*% X.mat); #covariance_matrix
+
+# obtaining the standard errors for the beta hats
+
+
+diagonal_matrix <- t(as.matrix(sqrt(diag(covariance_matrix))))
+
+
+n <- nrow(covariance_matrix)
+
+diagonal_matrix
+
+```
+
+```{r}
+# coding a correlation matrix
+
+correlation_matrix <- matrix(NA, nrow = 8, ncol = 8)
+
+for (i in 1:8) {
+    correlation_matrix[i,1] <- covariance_matrix[i,1]/(sqrt(covariance_matrix[i,i] * covariance_matrix[1,1]))
+    correlation_matrix[i,2] <- covariance_matrix[i,2]/(sqrt(covariance_matrix[i,i] * covariance_matrix[2,2]))
+    correlation_matrix[i,3] <- covariance_matrix[i,3]/(sqrt(covariance_matrix[i,i] * covariance_matrix[3,3]))
+    correlation_matrix[i,4] <- covariance_matrix[i,4]/(sqrt(covariance_matrix[i,i] * covariance_matrix[4,4]))
+    correlation_matrix[i,5] <- covariance_matrix[i,5]/(sqrt(covariance_matrix[i,i] * covariance_matrix[5,5]))
+    correlation_matrix[i,6] <- covariance_matrix[i,6]/(sqrt(covariance_matrix[i,i] * covariance_matrix[6,6]))
+    correlation_matrix[i,7] <- covariance_matrix[i,7]/(sqrt(covariance_matrix[i,i] * covariance_matrix[7,7]))
+    correlation_matrix[i,8] <- covariance_matrix[i,8]/(sqrt(covariance_matrix[i,i] * covariance_matrix[8,8]))
+}
+
+correlation_matrix
+
+```
