@@ -18,6 +18,7 @@ library(readxl)
 library(readr)
 library(patchwork)
 library(car)
+library(correlation)
 ```
 
 ```{r load-data}
@@ -324,6 +325,15 @@ for (i in 1:8) {
     correlation_matrix[i,8] <- covariance_matrix[i,8]/(sqrt(covariance_matrix[i,i] * covariance_matrix[8,8]))
 }
 
-correlation_matrix
 
+# visual display for correlation
+
+
+display.matrix <- cor_lower(correlation(sig_variables, redundant = TRUE))
+
+if (require("ggplot2")) {
+  ggplot(display.matrix, aes(x = Parameter2, y = Parameter1, fill = r)) +
+    geom_tile() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + labs(title = "Correlation Matrix")
+  
+}
 ```
