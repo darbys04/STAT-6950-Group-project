@@ -76,7 +76,7 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Method: Artificial Dichotomization}
+\begin{frame}{Method: Artificial Categorization}
     \begin{columns}[c]
         % Left column: Figure
         \begin{column}{0.3\textwidth}
@@ -89,7 +89,7 @@
         % Right column: Text
         \begin{column}{0.7\textwidth}
             \begin{itemize}
-                \item Despite existing binary variables in the dataset, authors artificially dichotomized a continuous predictor
+                \item Despite existing binary variables in the dataset, authors artificially binned a continuous predictor
                 \item \textbf{Candidates:} Self-compassion vs. compassion fatigue (two strong, conceptually related predictors from prior MLR)
                 \item \textbf{Selection Criterion:} Visual comparison of histograms
             \end{itemize}
@@ -100,7 +100,7 @@
 \begin{frame}{Method: Model Specification \& Reported Results}
     \begin{itemize}
         \item \textbf{Dependent Variable:} Fatigue
-        \item \textbf{Categorical Predictor:} Dichotomized self-compassion (chosen for its near-uniform distribution after removing ``lazy'' responses)
+        \item \textbf{Categorical Predictor:} Binned self-compassion (chosen for its near-uniform distribution after removing ``lazy'' responses)
         \item \textbf{Included Covariates (12 total):} Worry, apathetic, curious, fear of harm, avoidance, compassion fatigue, dissociation, perception, mental wellbeing, depression, receptive, connectedness
         \item \textbf{Reported Findings $\rightarrow$ Authors' Conclusions:}
         \begin{itemize}
@@ -128,10 +128,10 @@
 \begin{frame}{Methodological Critique}
     \begin{itemize}
         \item \textbf{Unjustified ANCOVA:} Without clearly pre-specified covariates, ANCOVA offers no advantage over their original MLR
-        \item \textbf{Loss of Information:} Weak statistical justification for dichotomizing a continuous variable
+        \item \textbf{Loss of Information:} Weak statistical justification for binning a continuous variable
         \item \textbf{Opaque Variable Selection:} No rationale provided for the 12 covariates included in the model
         \item \textbf{Figure Errors:} Reported histograms do not match the data (potentially due to swapped variable labels)
-        \item \textbf{Model Mismatch:} Authors draw conclusions about a \textit{dichotomized} variable to validate a model where that same variable is \textit{continuous}
+        \item \textbf{Model Mismatch:} Authors draw conclusions about a \textit{categorical} variable to validate a model where that same variable is \textit{continuous}
     \end{itemize}
 \end{frame}
 
