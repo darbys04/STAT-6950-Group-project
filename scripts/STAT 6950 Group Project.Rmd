@@ -276,7 +276,108 @@ ancova_model$main
 
 Findings could not be even remotely replicated. The paper indicates that "all the variables except worry and perception have a p-value below 0.05," but based on our model, only `worry`, `apathetic`, and `avoidance` are the significant variables. Also, when discussing ANCOVA, the paper indicates that only one dependent variable should be binned, but notably `depression`, `receptive`, and `connectedness` are all binary (and thus categorical) variables.
 
-# Zack?
+# Zack
+
+## Repeated five-fold cross-validation
+
+```{r first repeated-five-fold-cv}
+set.seed(6950)
+
+# Use the same response, predictors, and rows as Jack's 10-predictor model.
+cv_data <- model.frame(fitted.lm)
+cv_formula <- formula(fitted.lm)
+
+fold_r2 <- matrix(
+  NA_real_, nrow = 10, ncol = 5,
+  dimnames = list(NULL, paste0("Fold_", 1:5))
+)
+
+for (r in 1:10) {
+  fold_id <- sample(rep(1:5, length.out = nrow(cv_data)))
+
+  for (f in 1:5) {
+    train <- cv_data[fold_id != f, , drop = FALSE]
+    test  <- cv_data[fold_id == f, , drop = FALSE]
+
+    fit <- lm(cv_formula, data = train)
+    predicted <- predict(fit, newdata = test)
+    fold_r2[r, f] <- cor(predicted, test$burnout)^2
+  }
+}
+
+cv_results <- data.frame(
+  Repetition = 1:10,
+  fold_r2,
+  Mean_R2 = rowMeans(fold_r2)
+)
+
+knitr::kable(cv_results, digits = 3)
+```
+
+Across the ten repetitions, the mean validation $R^2$ for the 10-predictor model was `r sprintf("%.3f", mean(cv_results$Mean_R2))`.
+
+The five-fold cross-validation (CV) above uses Jack's fitted model created in accordance with the researcher's strategy of choosing regressors based on p-value. However, in the methodology section where the researchers discuss the use of 5-fold CV, they do not make it clear whether they are using such a model (with 10 regressors) or the model that they discuss right before in Table 2, which has 13 regressors ("curious", "fear-of-harm-from-others", and "avoidance" are included in this 13-regressor model). As such, I will also run another 5-fold CV on the model including those three additional regressors to see if I can get closer to the published result:
+
+```{r table2-repeated-five-fold-cv}
+
+# Add the three Table 2 predictors missing from the 10-predictor model
+formula_13 <- update(
+  formula(fitted.lm),
+  . ~ . + curious + fear_of_harm_from_others + avoidance
+)
+
+table2_fit <- lm(formula_13, data = raw_data)
+cv_data_13 <- model.frame(table2_fit)
+
+# Confirm both models use the same diary entries in the same order.
+stopifnot(identical(rownames(cv_data_13), rownames(model.frame(fitted.lm))))
+
+# Use the same seed and fold assignment method as the 10-predictor chunk.
+set.seed(6950)
+
+fold_r2_13 <- matrix(
+  NA_real_, nrow = 10, ncol = 5,
+  dimnames = list(NULL, paste0("Fold_", 1:5))
+)
+
+for (r in 1:10) {
+  fold_id <- sample(rep(1:5, length.out = nrow(cv_data_13)))
+  
+  for (f in 1:5) {
+    train <- cv_data_13[fold_id != f, , drop = FALSE]
+    test  <- cv_data_13[fold_id == f, , drop = FALSE]
+    
+    fit <- lm(formula_13, data = train)
+    predicted <- predict(fit, newdata = test)
+    fold_r2_13[r, f] <- cor(predicted, test$burnout)^2
+  }
+}
+
+cv_results_13 <- data.frame(
+  Repetition = 1:10,
+  fold_r2_13,
+  Mean_R2 = rowMeans(fold_r2_13)
+)
+
+knitr::kable(cv_results_13, digits = 3,
+             caption = "Five-fold validation results for the 13-predictor model")
+
+cv_comparison <- data.frame(
+  Model = c("Group model (10 predictors)", "Table 2 model (13 predictors)"),
+  Mean_CV_R2 = c(mean(cv_results$Mean_R2), mean(cv_results_13$Mean_R2))
+)
+
+knitr::kable(cv_comparison, digits = 4,
+             caption = "Mean validation R-squared across the same folds")
+```
+
+Using the same diary entries and folds, adding `curious`, `fear_of_harm_from_others`, and `avoidance` changed the mean validation $R^2$ from `r sprintf("%.4f", mean(cv_results$Mean_R2))` to `r sprintf("%.4f", mean(cv_results_13$Mean_R2))`. The published mean was 0.7103.
+
+Using the same five folds in each of the ten repetitions for both models, we obtained a mean validation $R^2$ of `r sprintf("%.4f", mean(cv_results$Mean_R2))` for the 10-predictor model and `r sprintf("%.4f", mean(cv_results_13$Mean_R2))` for the 13-predictor model. Adding curiosity, fear of harm from others, and avoidance changed the mean score by `r sprintf("%+.4f", mean(cv_results_13$Mean_R2) - mean(cv_results$Mean_R2))` (13-predictor minus 10-predictor). Because both models predicted the same held-out diary entries, this difference reflects the change in predictors.
+
+## 5-fold Cross-Validation Conclusion
+
+Our closer reconstruction of Table 2, using all 13 named predictors and the spreadsheet as released, produced a mean validation score `r sprintf("%.4f", abs(mean(cv_results_13$Mean_R2) - 0.7103))` away from the published mean of 0.7103. In keeping with the above histograms and ANCOVA results, this shows that following the reported methods with the released data did not reproduce every published result. The paper reports the average score for each repetition, but the original fold assignments are unavailable, so we cannot determine how much of the remaining CV difference is due to the choice of folds.
 
 ## Correlation Matrix
 
