@@ -57,28 +57,27 @@
 % --- SECTION 3 ---
 \section{ANCOVA}
 
-\begin{frame}{What is Analysis of Covariance (ANCOVA)}
+\begin{frame}{What is ANCOVA?}
     \begin{itemize}
-        \item ANCOVA is a general linear model that blends ANOVA and regression
+        \item General linear model combining ANOVA and regression
         \begin{itemize}
-            \item Most similar to MLR with categorical and continuous variables, but with different use cases
+            \item Mathematically equivalent to multiple linear regression (MLR) with categorical and continuous predictors, but differs in focus
         \end{itemize}
-        \item Generally used to compare group means after controlling for a nuisance variable (covariate)
-        \item For example: in a randomized trial, treatment group might be a categorical variable and ANCOVA could be used to test the group means between treatment groups after controlling for age.
+        \item \textbf{Primary Goal:} Compare group means after controlling for a continuous nuisance variable (\textit{covariate})
+        \item \textbf{Example:} Testing treatment group means in a randomized trial while controlling for patient age
     \end{itemize}
 \end{frame}
 
-\begin{frame}{What is Analysis of Covariance (ANCOVA)}
+\begin{frame}{Authors' Rationale for ANCOVA}
     \begin{itemize}
-        \item Their explanation: “ANCOVA analysis helps to find out how a variable, called covariate, affects model prediction success on a continuous dependent variable with grouping based on a categorical independent variable.”
-        \item Their purpose: “After obtaining regression results, variables that are likely to be covariants were checked with ANCOVA.”
-        \item R package: \textit{jmv}
+        \item \textbf{Authors' Definition:} “ANCOVA analysis helps to find out how a variable, called covariate, affects model prediction success on a continuous dependent variable with grouping based on a categorical independent variable.”
+        \item \textbf{Stated Purpose:} “After obtaining regression results, variables that are likely to be covariants were checked with ANCOVA.”
+        \item \textbf{Software:} R package \texttt{jmv} (jamovi)
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Method Description}
-    \begin{columns}[c] % [c] vertically centers the columns
-        
+\begin{frame}{Method: Artificial Dichotomization}
+    \begin{columns}[c]
         % Left column: Figure
         \begin{column}{0.3\textwidth}
             \begin{figure}
@@ -90,48 +89,49 @@
         % Right column: Text
         \begin{column}{0.7\textwidth}
             \begin{itemize}
-                \item While the data contains a few binary variables, the authors choose to dichotomize one of their continuous variables
-                \item To choose a variable to dichotomize, the authors selected between self-compassion and compassion fatigue, two conceptually related strong predictors in their previous regression model.
-                \item To make their choice, they compared histograms
+                \item Despite existing binary variables in the dataset, authors artificially dichotomized a continuous predictor
+                \item \textbf{Candidates:} Self-compassion vs. compassion fatigue (two strong, conceptually related predictors from prior MLR)
+                \item \textbf{Selection Criterion:} Visual comparison of histograms
             \end{itemize}
         \end{column}
-        
     \end{columns}
 \end{frame}
 
-\begin{frame}{Method Description}
+\begin{frame}{Method: Model Specification \& Reported Results}
     \begin{itemize}
-        \item Dichotomized self-compassion due to near uniform distribution (when discarding lazy answers)
-        \item Variables included in the model: worry, apathetic, self-compassion, curious, fear of harm from others, avoidance, compassion fatigue, dissociation, perception, mental wellbeing, depression, receptive, connectedness
-        \item Results (finding \rightarrow conclusion):
+        \item \textbf{Dependent Variable:} Fatigue
+        \item \textbf{Categorical Predictor:} Dichotomized self-compassion (chosen for its near-uniform distribution after removing ``lazy'' responses)
+        \item \textbf{Included Covariates (12 total):} Worry, apathetic, curious, fear of harm, avoidance, compassion fatigue, dissociation, perception, mental wellbeing, depression, receptive, connectedness
+        \item \textbf{Reported Findings $\rightarrow$ Authors' Conclusions:}
         \begin{itemize}
-            \item All the variables except worry and perception have a p-value below 0.05 \rightarrow it’s the right choice to include these variables in the regression model
-            \item Self-compassion and compassion fatigue have statistically significant p values \rightarrow compassion fatigue is a covariate for the predictor categorical variable self-compassion within our linear model
+            \item $p < 0.05$ for all variables except worry and perception $\rightarrow$ Justifies keeping them in the prior MLR model
+            \item Both self-compassion and compassion fatigue have $p < 0.05$ $\rightarrow$ Compassion fatigue is a valid covariate for self-compassion
         \end{itemize}
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Replication}
+\begin{frame}{Replication: Distribution Discrepancies}
     \begin{figure}
         \centering
         \includegraphics[width=0.7\textwidth]{Comparison histograms STAT 6950.png}
     \end{figure}
 \end{frame}
 
-
-\begin{frame}{Replication}
-    [INCLUDE TABLE OUTPUT]\\
-    We used the same data and R package as the authors but could not replicate any of their findings. Reason for the disparity unknown.
-
+\begin{frame}{Replication: Key Findings}
+    \begin{itemize}
+        \item \textbf{Unreproducible Distributions:} Basic variable histograms do not match those reported in the paper
+        \item \textbf{Failed Model Replication:} Using the exact same dataset and \texttt{jmv} R package, none of the authors' ANCOVA results could be reproduced
+        \item \textbf{Likely Cause:} Unreported data cleaning, filtering, or variable mislabeling in the original workflow
+    \end{itemize}
 \end{frame}
 
-\begin{frame}{Problems}
+\begin{frame}{Methodological Critique}
     \begin{itemize}
-        \item Given they did not clearly identify their covariates in the paper, there isn’t a reasonable justification for the use of ANCOVA to begin with
-        \item Weak justification for dichotomizing a variable
-        \item No explanation for variable inclusion choices
-        \item Inaccurate histogram figure (partially explicable if they mixed up their variables)
-        \item They make a conclusion about a dichotomized version of a variable that is continuous in their reported regression model
+        \item \textbf{Unjustified ANCOVA:} Without clearly pre-specified covariates, ANCOVA offers no advantage over their original MLR
+        \item \textbf{Loss of Information:} Weak statistical justification for dichotomizing a continuous variable
+        \item \textbf{Opaque Variable Selection:} No rationale provided for the 12 covariates included in the model
+        \item \textbf{Figure Errors:} Reported histograms do not match the data (potentially due to swapped variable labels)
+        \item \textbf{Model Mismatch:} Authors draw conclusions about a \textit{dichotomized} variable to validate a model where that same variable is \textit{continuous}
     \end{itemize}
 \end{frame}
 
