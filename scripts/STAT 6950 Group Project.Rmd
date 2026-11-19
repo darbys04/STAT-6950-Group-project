@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, include=FALSE}
 library(tidyverse)
 library(readxl)
-#library(here) # SD: No longer necessary -- switched data to referential file structure
 library(readr)
 library(patchwork)
 library(car)
@@ -24,11 +23,10 @@ library(corrplot)
 ```
 
 ```{r load-data}
-# first step of the process
-# raw data file
+# Raw data file
 raw_data <- read_xlsx("../data/pone.0302604.s004.xlsx", skip = 1) |>
   select(-c(userID))
-view(raw_data)
+#view(raw_data)
 ```
 
 ## Variable Selection by VIF
@@ -221,7 +219,7 @@ Neither of these histograms match the one reported in the paper (S1 Fig), but th
 
 ### Bin self_compassion (as reported)
 
-Note, it is not clear from the paper why the variables that are included in the ANCOVA model are selected. I have based my selection here on the paper's reported results.
+Note, it is not clear from the paper why the variables that are included in the ANCOVA model are selected. I have included variables here based on the paper's reported results.
 
 ```{r}
 # Bin self compassion and select reported variables
@@ -279,7 +277,7 @@ ancova_model$main
 
 ## ANCOVA Conclusion
 
-Findings could not be even remotely replicated. The paper indicates that "all the variables except worry and perception have a p-value below 0.05," but based on our model, only `worry`, `apathetic`, and `avoidance` are the significant variables. Also, when discussing ANCOVA, the paper indicates that only one dependent variable should be binned, but notably `depression`, `receptive`, and `connectedness` are all binary (and thus categorical) variables.
+Our findings differ significantly from the authors'. The paper indicates that "all the variables except worry and perception have a p-value below 0.05," but based on our model, only `worry`, `apathetic`, and `avoidance` are significant. Also, when discussing ANCOVA, the paper indicates that only one dependent variable should be binned, but notably `depression`, `receptive`, and `connectedness` are all binary (and thus categorical) variables.
 
 # Zack
 
