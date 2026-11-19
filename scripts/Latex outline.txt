@@ -1,0 +1,146 @@
+\documentclass[aspectratio=169, 12pt]{beamer}
+
+% --- Unbranded & Minimal Theme Setup ---
+\useoutertheme[compress]{miniframes} % Enables compact top section dots
+\useinnertheme{default}
+\usefonttheme{professionalfonts}
+
+% Remove unnecessary Beamer chrome (navigation symbols, heavy footlines)
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[page number] % Minimal page counter at bottom right
+
+% Ohio State University Color Palette
+\definecolor{osuscarlet}{RGB}{187, 0, 0}
+\definecolor{osugray}{RGB}{102, 102, 102}
+\definecolor{lightgrey}{RGB}{245, 245, 247}
+\definecolor{charcoal}{RGB}{34, 34, 34}
+
+\setbeamercolor{structure}{fg=osuscarlet}
+\setbeamercolor{titlelike}{fg=osuscarlet}
+\setbeamercolor{frametitle}{fg=osuscarlet, bg=white}
+\setbeamercolor{section in head/foot}{fg=osuscarlet, bg=white}
+\setbeamercolor{mini frame}{fg=osuscarlet}
+\setbeamercolor{section in head/foot shaded}{fg=osugray!40}
+
+\setbeamercolor{block title}{bg=osuscarlet, fg=white}
+\setbeamercolor{block body}{bg=lightgrey, fg=charcoal}
+
+% Adjust fonts
+\setbeamerfont{title}{size=\Large, series=\bfseries}
+\setbeamerfont{subtitle}{size=\normalsize}
+\setbeamerfont{frametitle}{size=\large, series=\bfseries}
+
+% --- Document Metadata ---
+\title{Understanding emotional and health indicators underlying the burnout risk of healthcare workers (2024)}
+\subtitle{Authors: Elçin Güveyi, et al.}
+\author{Zack, Jack, and Sam}
+\institute{OSU Department of Statistics PhD Student}
+\date{December 1, 2026}
+
+\begin{document}
+
+% Title Frame
+\begin{frame}[plain]
+    \titlepage
+\end{frame}
+
+% --- SECTION 1 ---
+\section{Introduction}
+
+\begin{frame}{Data Description}
+    
+\end{frame}
+
+% --- SECTION 2 ---
+\section{Regression}
+
+% --- SECTION 3 ---
+\section{ANCOVA}
+
+\begin{frame}{What is Analysis of Covariance (ANCOVA)}
+    \begin{itemize}
+        \item ANCOVA is a general linear model that blends ANOVA and regression
+        \begin{itemize}
+            \item Most similar to MLR with categorical and continuous variables, but with different use cases
+        \end{itemize}
+        \item Generally used to compare group means after controlling for a nuisance variable (covariate)
+        \item For example: in a randomized trial, treatment group might be a categorical variable and ANCOVA could be used to test the group means between treatment groups after controlling for age.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{What is Analysis of Covariance (ANCOVA)}
+    \begin{itemize}
+        \item Their explanation: “ANCOVA analysis helps to find out how a variable, called covariate, affects model prediction success on a continuous dependent variable with grouping based on a categorical independent variable.”
+        \item Their purpose: “After obtaining regression results, variables that are likely to be covariants were checked with ANCOVA.”
+        \item R package: \textit{jmv}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Method Description}
+    \begin{columns}[c] % [c] vertically centers the columns
+        
+        % Left column: Figure
+        \begin{column}{0.3\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=\textwidth]{Figure 1 STAT 6950.png}
+            \end{figure}
+        \end{column}
+        
+        % Right column: Text
+        \begin{column}{0.7\textwidth}
+            \begin{itemize}
+                \item While the data contains a few binary variables, the authors choose to dichotomize one of their continuous variables
+                \item To choose a variable to dichotomize, the authors selected between self-compassion and compassion fatigue, two conceptually related strong predictors in their previous regression model.
+                \item To make their choice, they compared histograms
+            \end{itemize}
+        \end{column}
+        
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Method Description}
+    \begin{itemize}
+        \item Dichotomized self-compassion due to near uniform distribution (when discarding lazy answers)
+        \item Variables included in the model: worry, apathetic, self-compassion, curious, fear of harm from others, avoidance, compassion fatigue, dissociation, perception, mental wellbeing, depression, receptive, connectedness
+        \item Results (finding \rightarrow conclusion):
+        \begin{itemize}
+            \item All the variables except worry and perception have a p-value below 0.05 \rightarrow it’s the right choice to include these variables in the regression model
+            \item Self-compassion and compassion fatigue have statistically significant p values \rightarrow compassion fatigue is a covariate for the predictor categorical variable self-compassion within our linear model
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Replication}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\textwidth]{Comparison histograms STAT 6950.png}
+    \end{figure}
+\end{frame}
+
+
+\begin{frame}{Replication}
+    [INCLUDE TABLE OUTPUT]\\
+    We used the same data and R package as the authors but could not replicate any of their findings. Reason for the disparity unknown.
+
+\end{frame}
+
+\begin{frame}{Problems}
+    \begin{itemize}
+        \item Given they did not clearly identify their covariates in the paper, there isn’t a reasonable justification for the use of ANCOVA to begin with
+        \item Weak justification for dichotomizing a variable
+        \item No explanation for variable inclusion choices
+        \item Inaccurate histogram figure (partially explicable if they mixed up their variables)
+        \item They make a conclusion about a dichotomized version of a variable that is continuous in their reported regression model
+    \end{itemize}
+\end{frame}
+
+% --- SECTION 4 ---
+\section{Conclusion}
+
+\begin{frame}
+    \centering
+    \Huge\bfseries\color{osuscarlet} Questions?
+\end{frame}
+
+\end{document}
