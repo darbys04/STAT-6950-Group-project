@@ -19,6 +19,8 @@ library(readr)
 library(patchwork)
 library(car)
 library(correlation)
+library(see)
+library(corrplot)
 ```
 
 ```{r load-data}
@@ -145,10 +147,11 @@ S1.Table <- data.frame(Months, Number.of.entries)
 S1.Table
 ```
 
+> The purpose of the following code is an attempt to replicate th 'S1 Fig. Distribution'
+
 ```{r}
 # recreating the 'S1 Fig. Distribution'
 # sig_variables$self_compassion <- sig_variables$self_compassion + 10.01
-
 
 p1 <- sig_variables_no_10 <- sig_variables %>% filter(self_compassion != 10)
 ggplot(data = sig_variables_no_10, aes(x= self_compassion)) + geom_histogram(bins = 10, color = "red") + labs(x = "Self-Compassion Scores", y = "Counts", title = "S1 Fig. Distribution")
@@ -182,7 +185,9 @@ The remaining predictor variables are:
   - the authors of the article mentioned that the predictors explain about 70% of the variation in burnout (when including the 'non-statistically significant' predictors)
 
 ```{r}
-# creating a regression model for self_compassion on the predictor variables--
+# creating a regression model for self_compassion on the predictor variables
+
+# this is the model that they claim to use in the paper
 
 burnout_reduced.one.lm <- lm(burnout ~., data = sig_variables)
 
@@ -385,25 +390,30 @@ Our closer reconstruction of Table 2, using all 13 named predictors and the spre
 # creating the correlation matrix for the fitted model with the variables deemed
 # significant under the 36-variable model
 
+# this is the response variable: burnout
 Y <- sig_variables$burnout
+# here is the matrix for the predictors for the model, including the intercept
 X.mat <- cbind(rep(1, nrow(sig_variables)), sig_variables$apathetic, sig_variables$self_compassion, sig_variables$compassion_fatigue, sig_variables$mental_wellbeing, sig_variables$depression, sig_variables$receptive, sig_variables$connectedness)
 
-t(X.mat) %*% X.mat
-
-
+# here is the matrix for the estimates of the coefficients
 beta.hat <- solve(t(X.mat) %*% X.mat) %*% t(X.mat) %*% Y; #beta.hat
+# calculating degrees of freedom; rows-columns
 df <- nrow(X.mat) - ncol(X.mat)
+# calculating the residual sums of squares for the model
 RSS <- t(Y-X.mat %*% beta.hat) %*% (Y-X.mat %*% beta.hat)
+# calculating sigma.hat
 sigma.hat <- as.numeric(sqrt(RSS/df))
-
+# this is the covariance matrix
+# recall that the variance for each of the predictors
+# are on the diagonals
 covariance_matrix <- sigma.hat^2*solve(t(X.mat) %*% X.mat); #covariance_matrix
 
 # obtaining the standard errors for the beta hats
 
+# here are the standard errors for the beta.hats
+diagonal_matrix <- as.matrix(sqrt(diag(covariance_matrix)))
 
-diagonal_matrix <- t(as.matrix(sqrt(diag(covariance_matrix))))
-
-
+# specifying that n=8, the number of rows from the covariance matrix
 n <- nrow(covariance_matrix)
 
 diagonal_matrix
@@ -415,20 +425,20 @@ diagonal_matrix
 
 correlation_matrix <- matrix(NA, nrow = 8, ncol = 8)
 
+# this is a for-loop to create a correlation
+
+# this can be shortened if a function is written?
+
 for (i in 1:8) {
-    correlation_matrix[i,1] <- covariance_matrix[i,1]/(sqrt(covariance_matrix[i,i] * covariance_matrix[1,1]))
-    correlation_matrix[i,2] <- covariance_matrix[i,2]/(sqrt(covariance_matrix[i,i] * covariance_matrix[2,2]))
-    correlation_matrix[i,3] <- covariance_matrix[i,3]/(sqrt(covariance_matrix[i,i] * covariance_matrix[3,3]))
-    correlation_matrix[i,4] <- covariance_matrix[i,4]/(sqrt(covariance_matrix[i,i] * covariance_matrix[4,4]))
-    correlation_matrix[i,5] <- covariance_matrix[i,5]/(sqrt(covariance_matrix[i,i] * covariance_matrix[5,5]))
-    correlation_matrix[i,6] <- covariance_matrix[i,6]/(sqrt(covariance_matrix[i,i] * covariance_matrix[6,6]))
-    correlation_matrix[i,7] <- covariance_matrix[i,7]/(sqrt(covariance_matrix[i,i] * covariance_matrix[7,7]))
-    correlation_matrix[i,8] <- covariance_matrix[i,8]/(sqrt(covariance_matrix[i,i] * covariance_matrix[8,8]))
+  for (j in 1:8) {
+    correlation_matrix[i,j] <- covariance_matrix[i,j] <- covariance_matrix[i,j]/sqrt(covariance_matrix[i,i]*covariance_matrix[j,j])
+  }
 }
 
 
-# visual display for correlation
 
+# visual display for correlation; one using the 'correlation package'
+# this first one is without the numeric variables
 
 display.matrix <- cor_lower(correlation(sig_variables, redundant = TRUE))
 
@@ -437,4 +447,8 @@ if (require("ggplot2")) {
     geom_tile() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + labs(title = "Correlation Matrix")
   
 }
+
+# this is done using the corrplot and the 'see' packages
+cor_matrix <- cor(sig_variables)
+corrplot(cor_matrix, method = 'number', type = 'lower',diag = FALSE, tl.cex = 0.8, number.cex = 0.8, cl.cex = 0.8, title = "Correlation Matrix for \"Significant\" predictors")
 ```
